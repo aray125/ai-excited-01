@@ -15,12 +15,13 @@ robot, one wave.
   its corners. Inside it, the little seascape it used to be: a sun
   with rays over three painted waves.
 - **The wave** — a giant teal wave breaking out of the frame, navy
-  crest outline with a white highlight core, two breaking lips, foam
+  crest outline with a white highlight core, three breaking lips, foam
   scallops, spray droplets and foam streaks down its face.
 - **The robot** — silver head with a cyan visor and gold bolts, magenta
   body, arms thrown up, a scarf streaming behind, standing on a
-  yellow rocket surfboard with a navy outline and a flame with a white
-  hot core.
+  yellow rocket surfboard with a navy outline, white and magenta
+  pinstripes and a lightning logo, and a flame with a white hot core,
+  a ragged outer flicker and a trail of embers.
 - **The energy** — a 12-ray directional burst behind the robot, 26
   random speed lines, 110 pieces of confetti, 24 sparkles, 4 big
   starbursts, and a starburst popping off the speech bubble.

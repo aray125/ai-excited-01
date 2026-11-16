@@ -7,7 +7,9 @@ the viewer, shouting "WOW, JUDGE!" in a big speech bubble. Flat poster
 style, thick outlines, one focal point, dark ink-blue background,
 magenta / yellow / cyan light bursts, speed lines, confetti and sparkles.
 The frame's little painted seascape has its own sun; the wave crest
-carries a white highlight over its navy edge and a second breaking lip.
+carries a white highlight over its navy edge and three breaking lips.
+The rocket flame leaves a ragged outer flicker and a trail of embers,
+and the board wears white and magenta pinstripes with a lightning logo.
 
 Pure Python 3 standard library (zlib + struct for the PNG encoder).
 Deterministic: fixed seed, no time, no network, no randomness from the
@@ -264,12 +266,16 @@ def draw_wave():
     circle(700, 468, 42, FOAM)
     circle(672, 494, 18, TEAL_DARK)
     circle(694, 458, 12, FOAM_BLUE)
+    # a third, smaller lip breaking below the main curl
+    circle(742, 560, 26, FOAM)
+    circle(726, 576, 11, TEAL_DARK)
+    circle(738, 552, 8, FOAM_BLUE)
     # foam scallops along the crest
     for (fx, fy, fr) in [(250, 600, 28), (360, 556, 30), (480, 516, 32),
                          (590, 492, 32), (690, 478, 30), (840, 520, 30),
                          (860, 580, 26), (150, 690, 26), (100, 790, 24),
                          (560, 500, 26), (330, 580, 24), (60, 860, 22),
-                         (900, 640, 24)]:
+                         (900, 640, 24), (770, 506, 22), (400, 540, 24)]:
         circle(fx, fy, fr, FOAM)
     # spray droplets flying off the crest
     for _ in range(46):
@@ -319,11 +325,18 @@ def draw_speed_lines():
 # ---- robot on the rocket surfboard -------------------------------------
 def draw_robot():
     # rocket flame + trail behind the board, with a hot white core
+    # outer flicker: a longer, ragged tongue of flame licking backwards
+    poly_fill([(604, 450), (508, 410), (520, 450), (508, 490)], (255, 69, 0))
     poly_fill([(600, 450), (545, 420), (545, 480)], ORANGE)
     poly_fill([(600, 450), (565, 432), (565, 468)], YELLOW)
     poly_fill([(600, 450), (580, 440), (580, 460)], FOAM)
     circle(550, 450, 16, YELLOW)
     circle(550, 450, 8, FOAM)
+    # embers streaming off the flame trail, fixed spots so they never move
+    for (ex, ey, er, ecol) in [(502, 440, 5, YELLOW), (484, 458, 4, ORANGE),
+                               (466, 434, 3, YELLOW), (448, 462, 4, ORANGE),
+                               (516, 472, 3, FOAM), (492, 422, 3, YELLOW)]:
+        circle(ex, ey, er, ecol)
     # fluttering magenta scarf streaming behind the robot's neck
     poly_fill([(700, 318), (640, 298), (598, 322), (646, 340)], ROBOT_PINK)
     poly_fill([(700, 322), (652, 312), (626, 330), (660, 342)], MAGENTA)
@@ -332,6 +345,11 @@ def draw_robot():
     thick_line(600, 450, 760, 385, 38, NAVY)
     thick_line(600, 450, 760, 385, 30, YELLOW)
     thick_line(615, 458, 750, 401, 8, ORANGE)
+    # pinstripes along the deck and a navy lightning logo near the nose
+    thick_line(598, 443, 758, 378, 4, FOAM)
+    thick_line(605, 462, 765, 397, 3, MAGENTA)
+    poly_fill([(740, 384), (728, 396), (736, 396), (730, 408),
+               (744, 394), (736, 394), (744, 384)], NAVY)
     # spray kicked up under the board
     circle(640, 452, 12, FOAM)
     circle(700, 432, 10, FOAM_BLUE)
