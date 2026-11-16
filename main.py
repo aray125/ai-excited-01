@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 """ai-excited-01 entry: "WOW, JUDGE!"
 
-A small robot rides a rocket surfboard on a giant wave that bursts OUT of
-a tilted golden picture frame toward the viewer, shouting "WOW, JUDGE!"
-in a big speech bubble. Flat poster style, thick outlines, one focal
-point, dark ink-blue background, magenta / yellow / cyan light bursts,
-speed lines and confetti.
+A small robot in a fluttering magenta scarf rides a rocket surfboard on
+a giant wave that bursts OUT of a tilted golden picture frame toward
+the viewer, shouting "WOW, JUDGE!" in a big speech bubble. Flat poster
+style, thick outlines, one focal point, dark ink-blue background,
+magenta / yellow / cyan light bursts, speed lines, confetti and sparkles.
+The frame's little painted seascape has its own sun; the wave crest
+carries a white highlight over its navy edge and a second breaking lip.
 
 Pure Python 3 standard library (zlib + struct for the PNG encoder).
 Deterministic: fixed seed, no time, no network, no randomness from the
@@ -32,6 +34,7 @@ FOAM = (255, 255, 255)
 FOAM_BLUE = (191, 243, 255)
 GOLD = (245, 184, 29)
 GOLD_DARK = (201, 138, 18)
+GOLD_LIGHT = (255, 214, 90)  # frame highlight and rivets
 MAGENTA = (255, 46, 136)
 YELLOW = (255, 212, 0)
 CYAN = (0, 229, 255)
@@ -79,11 +82,10 @@ def circle(cx, cy, rad, color):
         buf[i:i + (x1 - x0) * 3] = bytes((r, g, b)) * (x1 - x0)
 
 
-def ring(cx, cy, r_out, r_in, color):
-    circle(cx, cy, r_out, color)
-    # punch the hole with the colour underneath is impossible, so the caller
-    # draws the inner disc in its own colour afterwards; this helper only
-    # exists for the wave curl where we paint the hole explicitly.
+def star4(cx, cy, r, color):
+    """Four-point sparkle: a plus sign of two crossed bars."""
+    fill_rect(cx - 2, cy - r, cx + 3, cy + r + 1, color)
+    fill_rect(cx - r, cy - 2, cx + r + 1, cy + 3, color)
 
 
 def poly_fill(points, color):
@@ -167,6 +169,17 @@ def draw_background():
         r = _rng.choice([1, 1, 2])
         col = _rng.choice([FOAM, CYAN, YELLOW])
         circle(x, y, r, col)
+    # fainter stars lower down, where the wave will not cover them
+    for _ in range(25):
+        x = _rng.randrange(0, W)
+        y = _rng.randrange(430, 700)
+        circle(x, y, 1, FOAM_BLUE)
+    # four-point sparkles in the open sky
+    for _ in range(10):
+        x = _rng.randrange(30, 990)
+        y = _rng.randrange(30, 380)
+        star4(x, y, _rng.randrange(6, 12),
+              _rng.choice([FOAM, CYAN, YELLOW]))
 
 
 # ---- light burst rays behind the frame --------------------------------
@@ -208,6 +221,23 @@ def draw_frame():
             fy = inner2[0][1] + dy + int(14 * math.sin(t * 0.9))
             pts.append((fx, fy))
         poly_line(pts, 10, col)
+    # a small sun in the painted seascape, low enough to clear the frame
+    sun_x, sun_y = 320, 540
+    for k in range(8):
+        a = math.radians(k * 45)
+        x1 = int(sun_x + 30 * math.cos(a))
+        y1 = int(sun_y + 30 * math.sin(a))
+        x2 = int(sun_x + 42 * math.cos(a))
+        y2 = int(sun_y + 42 * math.sin(a))
+        thick_line(x1, y1, x2, y2, 5, GOLD_LIGHT)
+    circle(sun_x, sun_y, 22, YELLOW)
+    # gold rivets on the four frame corners
+    for cxr, cyr in corners:
+        circle(cxr, cyr, 12, GOLD_LIGHT)
+        circle(cxr, cyr, 6, GOLD_DARK)
+    # highlight along the frame's top outer edge
+    thick_line(corners[0][0], corners[0][1], corners[1][0], corners[1][1],
+               8, GOLD_LIGHT)
 
 
 # ---- the giant wave bursting out of the frame -------------------------
@@ -221,17 +251,25 @@ def draw_wave():
     shadow = [(x - 16, y + 22) for x, y in WAVE_TOP]
     poly_fill(shadow, TEAL_DARK)
     poly_fill(WAVE_TOP, TEAL)
-    # navy outline along the crest (the visible top edge)
+    # navy outline along the crest (the visible top edge), with a white
+    # highlight core so the crest reads against the dark sky
     poly_line(WAVE_TOP[3:11], 14, NAVY)
+    poly_line(WAVE_TOP[3:11], 6, FOAM)
     # wave curl: a breaking lip, not a ring (offset blobs, never concentric)
     circle(815, 465, 80, FOAM)
     circle(760, 515, 34, TEAL_DARK)
     circle(800, 455, 20, FOAM)
     circle(790, 440, 18, FOAM_BLUE)
+    # a second, smaller lip breaking just left of the main curl
+    circle(700, 468, 42, FOAM)
+    circle(672, 494, 18, TEAL_DARK)
+    circle(694, 458, 12, FOAM_BLUE)
     # foam scallops along the crest
     for (fx, fy, fr) in [(250, 600, 28), (360, 556, 30), (480, 516, 32),
                          (590, 492, 32), (690, 478, 30), (840, 520, 30),
-                         (860, 580, 26), (150, 690, 26), (100, 790, 24)]:
+                         (860, 580, 26), (150, 690, 26), (100, 790, 24),
+                         (560, 500, 26), (330, 580, 24), (60, 860, 22),
+                         (900, 640, 24)]:
         circle(fx, fy, fr, FOAM)
     # spray droplets flying off the crest
     for _ in range(46):
@@ -239,9 +277,15 @@ def draw_wave():
         y = _rng.randrange(300, 470)
         r = _rng.randrange(3, 13)
         circle(x, y, r, _rng.choice([FOAM, FOAM_BLUE, CYAN]))
+    for _ in range(20):
+        x = _rng.randrange(700, 1010)
+        y = _rng.randrange(250, 420)
+        r = _rng.randrange(2, 8)
+        circle(x, y, r, _rng.choice([FOAM, FOAM_BLUE, CYAN]))
     # foam streaks on the wave face
     for (sx, sy, ex, ey) in [(300, 700, 520, 620), (420, 820, 640, 720),
-                             (180, 880, 380, 800), (560, 920, 760, 840)]:
+                             (180, 880, 380, 800), (560, 920, 760, 840),
+                             (240, 760, 460, 680), (640, 980, 820, 900)]:
         thick_line(sx, sy, ex, ey, 12, FOAM_BLUE)
 
 
@@ -258,16 +302,34 @@ def draw_speed_lines():
         y1 = int(cy + r1 * math.sin(ang))
         thick_line(x0, y0, x1, y1, _rng.choice([6, 8, 10]),
                    _rng.choice([FOAM, CYAN, YELLOW]))
+    # a directional burst fanning out behind the robot, fixed angles so
+    # it never depends on the random stream (the robot, drawn later,
+    # covers the burst's centre)
+    for k in range(12):
+        a = math.radians(k * 30 + 15)
+        r0 = 150
+        r1 = 235 + (k % 3) * 40
+        bx0 = int(700 + r0 * math.cos(a))
+        by0 = int(420 + r0 * math.sin(a))
+        bx1 = int(700 + r1 * math.cos(a))
+        by1 = int(420 + r1 * math.sin(a))
+        thick_line(bx0, by0, bx1, by1, 8, [CYAN, YELLOW, FOAM][k % 3])
 
 
 # ---- robot on the rocket surfboard -------------------------------------
 def draw_robot():
-    # rocket flame + trail behind the board
+    # rocket flame + trail behind the board, with a hot white core
     poly_fill([(600, 450), (545, 420), (545, 480)], ORANGE)
     poly_fill([(600, 450), (565, 432), (565, 468)], YELLOW)
+    poly_fill([(600, 450), (580, 440), (580, 460)], FOAM)
     circle(550, 450, 16, YELLOW)
-    # board: yellow, tilted along the wave face, feet planted on it
-    thick_line(600, 450, 760, 385, 30, YELLOW)
+    circle(550, 450, 8, FOAM)
+    # fluttering magenta scarf streaming behind the robot's neck
+    poly_fill([(700, 318), (640, 298), (598, 322), (646, 340)], ROBOT_PINK)
+    poly_fill([(700, 322), (652, 312), (626, 330), (660, 342)], MAGENTA)
+    circle(600, 322, 8, ROBOT_PINK)
+    # board: navy outline under the yellow deck, feet planted on it
+    thick_line(600, 450, 760, 385, 38, NAVY)
     thick_line(600, 450, 760, 385, 30, YELLOW)
     thick_line(615, 458, 750, 401, 8, ORANGE)
     # spray kicked up under the board
@@ -298,6 +360,13 @@ def draw_robot():
     circle(714, 278, 6, NAVY)
     # little smile under the visor
     thick_line(684, 302, 716, 302, 5, NAVY)
+    # gold bolts on the head corners and a belly panel line
+    circle(672, 254, 5, GOLD)
+    circle(728, 254, 5, GOLD)
+    thick_line(678, 368, 722, 368, 4, NAVY)
+    # white cuffs where the arms meet the hands
+    circle(630, 284, 6, FOAM)
+    circle(770, 282, 6, FOAM)
 
 
 # ---- confetti ----------------------------------------------------------
@@ -312,6 +381,17 @@ def draw_confetti():
                       y + _rng.randrange(6, 12), col)
         else:
             circle(x, y, _rng.randrange(4, 9), col)
+    # four-point star sparkles scattered over the poster
+    for _ in range(24):
+        x = _rng.randrange(30, 994)
+        y = _rng.randrange(30, 994)
+        star4(x, y, _rng.randrange(7, 14),
+              _rng.choice([GOLD, CYAN, FOAM, YELLOW]))
+    # a few big starbursts for focal pops
+    for (sx, sy, sr) in [(120, 300, 18), (920, 260, 16), (880, 880, 18),
+                         (140, 900, 16)]:
+        star4(sx, sy, sr, YELLOW)
+        star4(sx, sy, sr - 6, FOAM)
 
 
 # ---- speech bubble "WOW, JUDGE!" --------------------------------------
@@ -363,6 +443,13 @@ def draw_bubble():
     tx = bx0 + (bx1 - bx0 - tw) // 2
     ty = by0 + (by1 - by0 - th) // 2
     draw_text(word, tx, ty, scale, NAVY)
+    # starburst accent popping off the bubble's top-right corner
+    star4(908, 58, 22, NAVY)
+    star4(908, 58, 18, YELLOW)
+    star4(908, 58, 10, FOAM)
+    # motion swooshes under the bubble's left side
+    thick_line(120, 202, 182, 216, 8, CYAN)
+    thick_line(142, 224, 202, 234, 8, YELLOW)
 
 
 # ---- PNG encoding (stdlib only) ----------------------------------------
